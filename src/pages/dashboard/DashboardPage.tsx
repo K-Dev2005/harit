@@ -4,8 +4,11 @@ import { EMISSION_FACTORS } from '../../lib/emissionFactors';
 import { DashboardData, Entry } from '../../types';
 import { WeeklyReviewContent } from '../review/ReviewPage';
 import { useAddEntry } from '../../context/AddEntryContext';
+import { saveAuthToken, getAuthUserId } from '../../lib/auth';
 
-const DEFAULT_USER_ID = 'user_001';
+function getActiveUserId(): string {
+  return getAuthUserId();
+}
 
 const mockDashboard: DashboardData = {
   weeklyBudgetKg: 18,
@@ -14,11 +17,11 @@ const mockDashboard: DashboardData = {
   streakDays: 5,
   friendRank: { position: 2, total: 5 },
   recentEntries: [
-    { id: "e1", userId: DEFAULT_USER_ID, category: "transport", subcategory: "petrol cab", description: "Uber to airport", distanceKm: 20, co2Kg: 4.2, source: "uber", loggedAt: new Date().toISOString(), createdAt: new Date().toISOString() },
-    { id: "e2", userId: DEFAULT_USER_ID, category: "food", subcategory: "non-veg meal", description: "Swiggy — butter chicken", quantity: 1, co2Kg: 3.1, source: "swiggy", loggedAt: new Date().toISOString(), createdAt: new Date().toISOString() },
-    { id: "e3", userId: DEFAULT_USER_ID, category: "transport", subcategory: "metro", description: "Metro to college", distanceKm: 18, co2Kg: 0.4, source: "manual", loggedAt: new Date(Date.now() - 86400000).toISOString(), createdAt: new Date(Date.now() - 86400000).toISOString() },
-    { id: "e4", userId: DEFAULT_USER_ID, category: "home", subcategory: "ac", description: "AC — 4 hours", quantity: 4, co2Kg: 1.1, source: "manual", loggedAt: new Date(Date.now() - 86400000).toISOString(), createdAt: new Date(Date.now() - 86400000).toISOString() },
-    { id: "e5", userId: DEFAULT_USER_ID, category: "food", subcategory: "veg meal", description: "Dal and roti at home", quantity: 1, co2Kg: 0.7, source: "manual", loggedAt: new Date(Date.now() - 172800000).toISOString(), createdAt: new Date(Date.now() - 172800000).toISOString() }
+    { id: "e1", userId: "user_001", category: "transport", subcategory: "petrol cab", description: "Uber to airport", distanceKm: 20, co2Kg: 4.2, source: "uber", loggedAt: new Date().toISOString(), createdAt: new Date().toISOString() },
+    { id: "e2", userId: "user_001", category: "food", subcategory: "non-veg meal", description: "Swiggy — butter chicken", quantity: 1, co2Kg: 3.1, source: "swiggy", loggedAt: new Date().toISOString(), createdAt: new Date().toISOString() },
+    { id: "e3", userId: "user_001", category: "transport", subcategory: "metro", description: "Metro to college", distanceKm: 18, co2Kg: 0.4, source: "manual", loggedAt: new Date(Date.now() - 86400000).toISOString(), createdAt: new Date(Date.now() - 86400000).toISOString() },
+    { id: "e4", userId: "user_001", category: "home", subcategory: "ac", description: "AC — 4 hours", quantity: 4, co2Kg: 1.1, source: "manual", loggedAt: new Date(Date.now() - 86400000).toISOString(), createdAt: new Date(Date.now() - 86400000).toISOString() },
+    { id: "e5", userId: "user_001", category: "food", subcategory: "veg meal", description: "Dal and roti at home", quantity: 1, co2Kg: 0.7, source: "manual", loggedAt: new Date(Date.now() - 172800000).toISOString(), createdAt: new Date(Date.now() - 172800000).toISOString() }
   ],
   categoryBreakdown: {
     transport: 18.4,
@@ -27,6 +30,7 @@ const mockDashboard: DashboardData = {
     stuff: 2.2
   }
 };
+
 
 export const DashboardPage: React.FC = () => {
   const navigate = useNavigate();
@@ -37,9 +41,21 @@ export const DashboardPage: React.FC = () => {
   const [ringPercentage, setRingPercentage] = useState(0);
   const [showReviewModal, setShowReviewModal] = useState(false);
 
+  // Capture OAuth token if redirected here from Google callback
+  useEffect(() => {
+    const params = new URLSearchParams(window.location.search);
+    const token = params.get('token');
+    const userId = params.get('userId');
+    const name = params.get('name') || 'User';
+    if (token && userId) {
+      saveAuthToken(token, userId, decodeURIComponent(name));
+      window.history.replaceState({}, '', '/dashboard');
+    }
+  }, []);
+
   const fetchDashboardData = async () => {
     try {
-      const res = await fetch(`/api/users/dashboard?userId=${DEFAULT_USER_ID}`);
+      const res = await fetch(`/api/users/dashboard?userId=${getActiveUserId()}`);
       if (res.ok) {
         const json = await res.json();
         // Check if friendRank is just a number, transform it to matching type
