@@ -1,5 +1,5 @@
 import { Router, Request, Response } from 'express';
-import { prisma } from '../index';
+import { readDb, writeDb } from '../db';
 import { POINTS_CONFIG } from '../../lib/points';
 
 const router = Router();
@@ -13,19 +13,29 @@ router.post('/', async (req: Request, res: Response): Promise<void> => {
       return;
     }
 
-    const pledge = await prisma.pledge.create({
-      data: {
-        userId,
-        actionCardId,
-        verificationStatus: 'pending',
-        pointsAwarded: POINTS_CONFIG.PLEDGE_COMMITTED
-      }
-    });
+    const store = readDb();
+    
+    const pledge = {
+      id: `pledge_${Date.now()}`,
+      userId,
+      actionCardId,
+      verificationStatus: 'pending',
+      pointsAwarded: POINTS_CONFIG.PLEDGE_COMMITTED,
+      committedAt: new Date().toISOString()
+    };
+    
+    if (!store.pledges) store.pledges = [];
+    store.pledges.push(pledge);
 
-    const user = await prisma.user.update({
-      where: { id: userId },
-      data: { pointsTotal: { increment: POINTS_CONFIG.PLEDGE_COMMITTED } }
-    });
+    let user = store.users.find((u: any) => u.id === userId);
+    if (user) {
+      user.pointsTotal = (user.pointsTotal || 0) + POINTS_CONFIG.PLEDGE_COMMITTED;
+    } else {
+      user = { id: userId, pointsTotal: POINTS_CONFIG.PLEDGE_COMMITTED, streakDays: 0 };
+      store.users.push(user);
+    }
+    
+    writeDb(store);
 
     res.status(201).json({ pledge, pointsTotal: user.pointsTotal });
   } catch (error) {

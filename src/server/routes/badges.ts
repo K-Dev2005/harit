@@ -1,5 +1,5 @@
 import { Router, Request, Response } from 'express';
-import { prisma } from '../index';
+import { readDb } from '../db';
 
 const router = Router();
 
@@ -17,9 +17,8 @@ router.get('/', async (req: Request, res: Response): Promise<void> => {
       return;
     }
 
-    const earned = await prisma.badge.findMany({
-      where: { userId }
-    });
+    const store = readDb();
+    const earned = store.badges.filter((b: any) => b.userId === userId);
 
     const earnedMap = new Map();
     earned.forEach((b: any) => earnedMap.set(b.slug, b.earnedAt));

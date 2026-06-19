@@ -1,5 +1,5 @@
 import { Router, Request, Response } from 'express';
-import { prisma } from '../index';
+import { readDb } from '../db';
 import { generateActionCards } from '../services/geminiService';
 import { startOfWeek } from 'date-fns';
 
@@ -17,11 +17,11 @@ router.get('/weekly', async (req: Request, res: Response): Promise<void> => {
     const now = new Date();
     // Normally we'd check if today is Monday and no cards generated this week.
     // For demo purposes, we will just call Gemini directly.
-    const recentEntries = await prisma.entry.findMany({
-      where: { userId },
-      orderBy: { loggedAt: 'desc' },
-      take: 20
-    });
+    const store = readDb();
+    const allEntries = store.entries.filter((e: any) => e.userId === userId);
+    const recentEntries = allEntries
+      .sort((a, b) => new Date(b.loggedAt).getTime() - new Date(a.loggedAt).getTime())
+      .slice(0, 20);
 
     const categoryBreakdown: Record<string, number> = {};
     recentEntries.forEach((e: any) => {

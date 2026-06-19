@@ -1,5 +1,5 @@
 import { Router, Request, Response } from 'express';
-import { prisma } from '../index';
+import { readDb } from '../db';
 import { generateWeeklyInsight } from '../services/geminiService';
 import { startOfWeek } from 'date-fns';
 
@@ -17,9 +17,9 @@ router.get('/weekly', async (req: Request, res: Response): Promise<void> => {
     const now = new Date();
     const weekStart = startOfWeek(now, { weekStartsOn: 1 });
 
-    const weekEntries = await prisma.entry.findMany({
-      where: { userId, loggedAt: { gte: weekStart } }
-    });
+    const store = readDb();
+    const allEntries = store.entries.filter((e: any) => e.userId === userId);
+    const weekEntries = allEntries.filter((e: any) => new Date(e.loggedAt) >= weekStart);
 
     const insight = await generateWeeklyInsight(weekEntries);
 
