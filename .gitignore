@@ -1,0 +1,31 @@
+# Dependency directories
+node_modules/
+
+# Production build outputs
+dist/
+build/
+
+# Local env files
+.env
+.env.local
+.env.development.local
+.env.test.local
+.env.production.local
+
+# Databases & local stores
+db.json
+*.db
+*.sqlite
+
+# IDEs and editors
+.idea/
+.vscode/
+*.suo
+*.ntvs*
+*.njsproj
+*.sln
+*.sw?
+
+# System files
+.DS_Store
+Thumbs.db

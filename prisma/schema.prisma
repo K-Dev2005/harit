@@ -1,0 +1,74 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+model User {
+  id               String   @id @default(uuid())
+  email            String?  @unique
+  phone            String?  @unique
+  googleId         String?  @unique
+  name             String
+  avatarUrl        String?
+  weeklyBudgetKg   Float    @default(18.0)
+  pointsTotal      Int      @default(0)
+  streakDays       Int      @default(0)
+  streakLastLogged DateTime?
+  createdAt        DateTime @default(now())
+  entries          Entry[]
+  pledges          Pledge[]
+  badges           Badge[]
+}
+
+model OnboardingResponse {
+  id               String   @id @default(uuid())
+  userId           String   @unique
+  commuteType      String
+  dietType         String
+  homeEnergy       String
+  flightsPerYear   String
+  baselineAnnualKg Float
+  createdAt        DateTime @default(now())
+}
+
+model Entry {
+  id          String   @id @default(uuid())
+  userId      String
+  user        User     @relation(fields: [userId], references: [id])
+  category    String
+  subcategory String?
+  description String
+  distanceKm  Float?
+  quantity    Float?
+  unit        String?
+  co2Kg       Float
+  source      String
+  rawInput    String?
+  loggedAt    DateTime @default(now())
+  createdAt   DateTime @default(now())
+}
+
+model Pledge {
+  id                 String    @id @default(uuid())
+  userId             String
+  user               User      @relation(fields: [userId], references: [id])
+  actionCardId       String
+  committedAt        DateTime  @default(now())
+  verificationStatus String    @default("pending")
+  verifiedAt         DateTime?
+  pointsAwarded      Int       @default(0)
+}
+
+model Badge {
+  id       String   @id @default(uuid())
+  userId   String
+  user     User     @relation(fields: [userId], references: [id])
+  slug     String
+  earnedAt DateTime @default(now())
+
+  @@unique([userId, slug])
+}
