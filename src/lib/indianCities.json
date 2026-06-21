@@ -6108,5 +6108,10 @@
         "id":"1222",
         "name":"Ganganagar",
         "state":"Rajasthan"
+    },
+    {
+        "id":"1223",
+        "name":"Mughalsarai",
+        "state":"Uttar Pradesh"
     }
 ]

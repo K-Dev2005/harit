@@ -8,7 +8,7 @@ import { ManualTab } from './AddEntryTabs/ManualTab';
 
 const TABS = [
   { id: 'ai', label: 'AI text', icon: Sparkles },
-  { id: 'pnr', label: 'PNR / flight', icon: Train },
+  { id: 'pnr', label: 'Flight / Train', icon: Train },
   { id: 'manual', label: 'Manual', icon: FileText },
 ];
 

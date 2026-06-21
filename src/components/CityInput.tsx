@@ -30,8 +30,16 @@ export const CityInput: React.FC<CityInputProps> = ({ label, placeholder, onSele
   const [isOpen, setIsOpen] = useState(false);
   const [highlightedIndex, setHighlightedIndex] = useState(-1);
   const wrapperRef = useRef<HTMLDivElement>(null);
+  // Ref to track when a city has just been selected — suppresses the search effect
+  const justSelectedRef = useRef(false);
 
   useEffect(() => {
+    // Skip the search if this query change was caused by a selection
+    if (justSelectedRef.current) {
+      justSelectedRef.current = false;
+      return;
+    }
+
     if (query.length >= 2) {
       const results = fuse.search(query).map(result => result.item).slice(0, 6);
       setSuggestions(results);
@@ -56,8 +64,11 @@ export const CityInput: React.FC<CityInputProps> = ({ label, placeholder, onSele
 
   const handleSelect = (city: City) => {
     const displayString = `${city.name}, ${city.state}`;
+    // Mark that the next query change is from a selection — don't run Fuse search
+    justSelectedRef.current = true;
     setQuery(displayString);
     setIsOpen(false);
+    setSuggestions([]);
     onSelect(`${displayString}, India`);
   };
 
@@ -88,10 +99,9 @@ export const CityInput: React.FC<CityInputProps> = ({ label, placeholder, onSele
         value={query}
         onChange={(e) => {
           setQuery(e.target.value);
-          // If user starts typing again, we clear the actual selection in the parent (handled via onSelect outside if needed)
         }}
         onFocus={() => {
-          if (query.length >= 2) setIsOpen(true);
+          if (query.length >= 2 && suggestions.length > 0) setIsOpen(true);
         }}
         onKeyDown={handleKeyDown}
         placeholder={placeholder || 'Search city...'}
@@ -99,28 +109,27 @@ export const CityInput: React.FC<CityInputProps> = ({ label, placeholder, onSele
         className="w-full bg-surface border border-outline-variant rounded p-sm text-body-md focus:border-primary disabled:opacity-50"
       />
 
-      {isOpen && query.length >= 2 && (
+      {isOpen && suggestions.length > 0 && (
         <div className="absolute top-full mt-1 w-full bg-surface border border-outline-variant rounded shadow-lg z-50 overflow-hidden">
-          {suggestions.length > 0 ? (
-            <ul className="max-h-60 overflow-auto">
-              {suggestions.map((city, index) => (
-                <li
-                  key={`${city.id}-${index}`}
-                  onClick={() => handleSelect(city)}
-                  onMouseEnter={() => setHighlightedIndex(index)}
-                  className={`px-sm py-md text-body-md cursor-pointer transition-colors ${
-                    highlightedIndex === index ? 'bg-surface-container-high' : 'hover:bg-surface-container'
-                  }`}
-                >
-                  {city.name}, {city.state}
-                </li>
-              ))}
-            </ul>
-          ) : (
-            <div className="px-sm py-md text-body-md text-on-surface-variant">
-              No cities found — try a different spelling
-            </div>
-          )}
+          <ul className="max-h-60 overflow-auto">
+            {suggestions.map((city, index) => (
+              <li
+                key={`${city.id}-${index}`}
+                onMouseDown={(e) => {
+                  // Use onMouseDown + preventDefault to prevent the input from losing focus
+                  // before onClick fires, which would close the dropdown prematurely
+                  e.preventDefault();
+                  handleSelect(city);
+                }}
+                onMouseEnter={() => setHighlightedIndex(index)}
+                className={`px-sm py-md text-body-md cursor-pointer transition-colors ${
+                  highlightedIndex === index ? 'bg-surface-container-high' : 'hover:bg-surface-container'
+                }`}
+              >
+                {city.name}, {city.state}
+              </li>
+            ))}
+          </ul>
         </div>
       )}
     </div>
