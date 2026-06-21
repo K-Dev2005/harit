@@ -20,7 +20,7 @@
     "noUnusedParameters": false,
     "noFallthroughCasesInSwitch": true,
     "esModuleInterop": true,
-    "types": ["vite/client"]
+    "types": ["vite/client", "@testing-library/jest-dom"]
   },
   "include": ["src/components/**/*", "src/pages/**/*", "src/lib/**/*", "src/types/**/*", "src/main.tsx", "src/App.tsx", "vite.config.ts"],
   "exclude": ["node_modules", "src/server/**/*"]

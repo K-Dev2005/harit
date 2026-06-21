@@ -1,10 +1,16 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { EMISSION_FACTORS } from '../../lib/emissionFactors';
 import { DashboardData, Entry } from '../../types';
 import { WeeklyReviewContent } from '../review/ReviewPage';
 import { useAddEntry } from '../../context/AddEntryContext';
 import { saveAuthToken, getAuthUserId } from '../../lib/auth';
+
+// Extracted Sub-components
+import { BudgetRing } from './components/BudgetRing';
+import { StatsRow } from './components/StatsRow';
+import { RecentEntries } from './components/RecentEntries';
+import { CategoryBreakdownChart } from './components/CategoryBreakdownChart';
+import { EntryDetailSheet } from './components/EntryDetailSheet';
 
 function getActiveUserId(): string {
   return getAuthUserId();
@@ -30,7 +36,6 @@ const mockDashboard: DashboardData = {
     stuff: 2.2
   }
 };
-
 
 export const DashboardPage: React.FC = () => {
   const navigate = useNavigate();
@@ -218,8 +223,6 @@ export const DashboardPage: React.FC = () => {
     setSelectedEntry(null);
   };
 
-
-
   if (loading || !data) {
     return (
       <div className="flex h-screen items-center justify-center bg-background">
@@ -230,38 +233,6 @@ export const DashboardPage: React.FC = () => {
       </div>
     );
   }
-
-  // Calculate Ring values
-  const budget = data.weeklyBudgetKg;
-  const current = data.weekCurrentKg;
-  const remaining = budget - current;
-  const isOver = remaining < 0;
-
-  // SVG calculations
-  const r = 80;
-  const circumference = 2 * Math.PI * r; // ~502.6
-  // Fills clockwise from top. Dashoffset represents the EMPTY part.
-  const percentageClamped = Math.min(100, Math.max(0, ringPercentage));
-  const strokeDashoffset = circumference - (percentageClamped / 100) * circumference;
-
-  // Determine Ring Color
-  let ringColor = 'stroke-primary'; // Under 80% (green)
-  if (current >= budget * 0.8 && current <= budget) {
-    ringColor = 'stroke-[#d97706]'; // 80-100% (amber)
-  } else if (current > budget) {
-    ringColor = 'stroke-[#dc2626]'; // Over budget (red)
-  }
-
-  // Category Breakdown values
-  const breakdown = data.categoryBreakdown;
-  const totalBreakdown = Object.values(breakdown).reduce((sum, v) => sum + v, 0) || 1;
-
-  const categories = [
-    { key: 'transport', label: 'Transport', color: 'bg-secondary', text: 'text-on-secondary' },
-    { key: 'food', label: 'Food', color: 'bg-secondary-container', text: 'text-on-secondary-container' },
-    { key: 'home', label: 'Home', color: 'bg-primary-container', text: 'text-on-primary-container' },
-    { key: 'stuff', label: 'Stuff', color: 'bg-tertiary', text: 'text-on-tertiary' }
-  ];
 
   return (
     <div className="flex-1 flex flex-col min-w-0 bg-background pb-[80px] md:pb-0 md:pl-64">
@@ -284,185 +255,29 @@ export const DashboardPage: React.FC = () => {
       <main className="flex-1 p-md md:p-xl max-w-[800px] w-full mx-auto space-y-lg">
         
         {/* Section 1: Weekly Progress Ring */}
-        <section className="bg-surface-container-lowest border border-surface-variant rounded-lg p-lg flex flex-col items-center justify-center relative shadow-[0_4px_20px_rgba(0,0,0,0.01)]">
-          <div className="w-full flex justify-between items-center mb-md border-b border-surface-variant/40 pb-sm">
-            <span className="font-semibold text-label-sm text-on-surface-variant uppercase tracking-widest">Weekly Budget Tracker</span>
-            <div className="flex items-center gap-xs">
-              <button 
-                onClick={() => navigate('/review')}
-                className="text-[11px] text-secondary font-bold hover:underline flex items-center gap-[2px] mr-xs"
-              >
-                <span className="material-symbols-outlined text-[14px]">history</span>
-                View last week
-              </button>
-              <span className="text-xs bg-surface-container-low px-sm py-xs rounded-full font-medium text-on-surface-variant">
-                Limit: {budget.toFixed(1)} kg
-              </span>
-            </div>
-          </div>
-
-          <div className="relative w-[200px] h-[200px] my-md">
-            <svg className="w-full h-full transform -rotate-90" viewBox="0 0 200 200">
-              <circle
-                className="stroke-surface-container-low"
-                cx="100"
-                cy="100"
-                fill="transparent"
-                r={r}
-                strokeWidth="12"
-              />
-              <circle
-                className={`${ringColor} transition-all duration-1000 ease-out`}
-                cx="100"
-                cy="100"
-                fill="transparent"
-                r={r}
-                strokeWidth="12"
-                strokeLinecap="round"
-                strokeDasharray={circumference}
-                strokeDashoffset={strokeDashoffset}
-              />
-            </svg>
-            <div className="absolute inset-0 flex flex-col items-center justify-center">
-              <span className="text-[44px] font-extrabold text-primary leading-none tracking-tighter">
-                {current.toFixed(1)}
-              </span>
-              <span className="text-[11px] font-medium text-on-surface-variant tracking-wider uppercase mt-1">
-                kg this week
-              </span>
-            </div>
-          </div>
-
-          <div className="text-center mt-sm">
-            {!isOver ? (
-              <p className="text-body-md font-semibold text-[#2c694e] flex items-center gap-xs">
-                <span className="material-symbols-outlined text-[18px] fill-icon">check_circle</span>
-                {remaining.toFixed(1)} kg remaining
-              </p>
-            ) : (
-              <p className="text-body-md font-semibold text-[#dc2626] flex items-center gap-xs">
-                <span className="material-symbols-outlined text-[18px]">warning</span>
-                {Math.abs(remaining).toFixed(1)} kg over budget
-              </p>
-            )}
-          </div>
-        </section>
+        <BudgetRing
+          weeklyBudgetKg={data.weeklyBudgetKg}
+          weekCurrentKg={data.weekCurrentKg}
+          ringPercentage={ringPercentage}
+        />
 
         {/* Section 2: Stats Row */}
-        <section className="grid grid-cols-3 gap-sm">
-          <div className="bg-surface-container-low hover:bg-surface-container rounded-md p-md flex flex-col justify-between transition-colors">
-            <span className="text-[12px] text-on-surface-variant font-medium tracking-tight">This month</span>
-            <span className="text-[20px] md:text-[22px] font-semibold text-primary mt-xs">{data.monthTotalKg.toFixed(1)} kg</span>
-          </div>
-          <div className="bg-surface-container-low hover:bg-surface-container rounded-md p-md flex flex-col justify-between transition-colors">
-            <span className="text-[12px] text-on-surface-variant font-medium tracking-tight">Streak</span>
-            <span className="text-[20px] md:text-[22px] font-semibold text-primary mt-xs">{data.streakDays} days</span>
-          </div>
-          <div className="bg-surface-container-low hover:bg-surface-container rounded-md p-md flex flex-col justify-between transition-colors">
-            <span className="text-[12px] text-on-surface-variant font-medium tracking-tight">Friend rank</span>
-            <span className="text-[20px] md:text-[22px] font-semibold text-primary mt-xs">
-              #{typeof data.friendRank === 'object' ? data.friendRank.position : data.friendRank} of {typeof data.friendRank === 'object' ? data.friendRank.total : 5}
-            </span>
-          </div>
-        </section>
+        <StatsRow
+          monthTotalKg={data.monthTotalKg}
+          streakDays={data.streakDays}
+          friendRank={data.friendRank}
+        />
 
         {/* Section 3: Recent Entries */}
-        <section className="bg-surface-container-lowest border border-surface-variant rounded-lg p-lg shadow-[0_4px_20px_rgba(0,0,0,0.01)]">
-          <div className="flex justify-between items-center mb-md border-b border-surface-variant/40 pb-xs">
-            <h2 className="font-semibold text-body-lg text-primary">Recent entries</h2>
-            <button className="text-secondary font-semibold text-xs hover:underline">See all</button>
-          </div>
-
-          <div className="divide-y divide-surface-container-low">
-            {data.recentEntries.length === 0 ? (
-              <p className="text-center py-md text-xs text-on-surface-variant">No entries recorded yet.</p>
-            ) : (
-              data.recentEntries.slice(0, 5).map((entry) => {
-                let icon = 'directions_car';
-                let iconBg = 'bg-secondary-container text-on-secondary-container';
-                if (entry.category === 'food') {
-                  icon = 'restaurant';
-                  iconBg = 'bg-tertiary-container text-[#aeeecb]'; // customized
-                } else if (entry.category === 'home') {
-                  icon = 'bolt';
-                  iconBg = 'bg-[#ffdad6] text-[#ba1a1a]';
-                } else if (entry.category === 'stuff') {
-                  icon = 'shopping_bag';
-                  iconBg = 'bg-surface-container text-primary';
-                }
-
-                return (
-                  <div
-                    key={entry.id}
-                    onClick={() => setSelectedEntry(entry)}
-                    className="flex items-center justify-between py-sm cursor-pointer group hover:bg-surface-container-lowest transition-colors px-1"
-                  >
-                    <div className="flex items-center gap-sm">
-                      <div className={`w-10 h-10 rounded-md flex items-center justify-center ${iconBg}`}>
-                        <span className="material-symbols-outlined text-[20px]">{icon}</span>
-                      </div>
-                      <div className="flex flex-col">
-                        <span className="text-[13px] font-semibold text-primary group-hover:text-secondary transition-colors">
-                          {entry.description}
-                        </span>
-                        <span className="text-[11px] text-on-surface-variant">
-                          {entry.subcategory || entry.category} • {entry.loggedAt ? 'Today' : 'Yesterday'}
-                        </span>
-                      </div>
-                    </div>
-                    <span className="text-[13px] font-medium text-on-surface-variant">
-                      {entry.co2Kg.toFixed(1)} kg
-                    </span>
-                  </div>
-                );
-              })
-            )}
-          </div>
-        </section>
+        <RecentEntries
+          entries={data.recentEntries}
+          onSelectEntry={setSelectedEntry}
+        />
 
         {/* Section 4: Category Breakdown */}
-        <section className="bg-surface-container-lowest border border-surface-variant rounded-lg p-lg shadow-[0_4px_20px_rgba(0,0,0,0.01)]">
-          <h2 className="font-semibold text-body-lg text-primary mb-md">This month by category</h2>
-          
-          {/* Stacked Bar Chart */}
-          <div className="w-full h-[12px] bg-surface-container rounded-full overflow-hidden flex mb-md">
-            {categories.map((cat) => {
-              const val = breakdown[cat.key] || 0;
-              const pct = (val / totalBreakdown) * 100;
-              if (pct <= 0) return null;
-              return (
-                <div
-                  key={cat.key}
-                  onClick={() => navigate(`/category/${cat.key}`)}
-                  style={{ width: `${pct}%` }}
-                  className={`${cat.color} h-full cursor-pointer hover:opacity-90 transition-opacity`}
-                  title={`${cat.label}: ${val.toFixed(1)} kg (${pct.toFixed(0)}%)`}
-                />
-              );
-            })}
-          </div>
-
-          {/* Legend Pills */}
-          <div className="grid grid-cols-2 md:grid-cols-4 gap-xs">
-            {categories.map((cat) => {
-              const val = breakdown[cat.key] || 0;
-              const pct = (val / totalBreakdown) * 100;
-              return (
-                <div
-                  key={cat.key}
-                  onClick={() => navigate(`/category/${cat.key}`)}
-                  className="flex items-center gap-xs px-sm py-xs bg-surface-container-low hover:bg-surface-container rounded-full cursor-pointer transition-colors"
-                >
-                  <span className={`w-3 h-3 rounded-full ${cat.color}`} />
-                  <div className="flex flex-col">
-                    <span className="text-[11px] font-semibold text-primary">{cat.label}</span>
-                    <span className="text-[10px] text-on-surface-variant">{pct.toFixed(0)}%</span>
-                  </div>
-                </div>
-              );
-            })}
-          </div>
-        </section>
+        <CategoryBreakdownChart
+          breakdown={data.categoryBreakdown}
+        />
 
       </main>
 
@@ -476,56 +291,12 @@ export const DashboardPage: React.FC = () => {
 
       {/* Entry Detail Bottom Sheet */}
       {selectedEntry && (
-        <div className="fixed inset-0 bg-primary/20 backdrop-blur-[2px] z-50 flex items-end justify-center">
-          <div className="bg-surface-container-lowest w-full max-w-[500px] rounded-t-lg p-lg space-y-md shadow-[0_-5px_30px_rgba(0,0,0,0.15)] animate-slide-up">
-            <div className="flex justify-between items-start border-b border-surface-variant pb-sm">
-              <div>
-                <h3 className="font-semibold text-body-lg text-primary">{selectedEntry.description}</h3>
-                <p className="text-[12px] text-on-surface-variant capitalize">{selectedEntry.category} • {selectedEntry.subcategory || 'General'}</p>
-              </div>
-              <button
-                onClick={() => setSelectedEntry(null)}
-                className="p-xs text-on-surface-variant hover:bg-surface-container rounded-full"
-              >
-                <span className="material-symbols-outlined">close</span>
-              </button>
-            </div>
-
-            <div className="space-y-sm py-xs">
-              <div className="flex justify-between">
-                <span className="text-xs text-on-surface-variant">Carbon Footprint</span>
-                <span className="text-xs font-semibold text-primary">{selectedEntry.co2Kg.toFixed(1)} kg CO2e</span>
-              </div>
-              <div className="flex justify-between">
-                <span className="text-xs text-on-surface-variant">Logged Source</span>
-                <span className="text-xs font-medium text-primary capitalize">{selectedEntry.source}</span>
-              </div>
-              <div className="flex justify-between">
-                <span className="text-xs text-on-surface-variant">Date logged</span>
-                <span className="text-xs font-medium text-primary">
-                  {new Date(selectedEntry.loggedAt).toLocaleDateString(undefined, { dateStyle: 'medium' })}
-                </span>
-              </div>
-            </div>
-
-            <div className="flex gap-sm border-t border-surface-variant pt-md">
-              <button
-                onClick={() => handleDeleteEntry(selectedEntry.id)}
-                className="flex-1 py-sm bg-[#dc2626] text-white rounded-full font-semibold text-xs hover:bg-[#b91c1c] transition-colors"
-              >
-                Delete Entry
-              </button>
-              <button
-                onClick={() => setSelectedEntry(null)}
-                className="flex-1 py-sm border border-outline-variant text-primary rounded-full font-semibold text-xs hover:bg-surface-container transition-colors"
-              >
-                Cancel
-              </button>
-            </div>
-          </div>
-        </div>
+        <EntryDetailSheet
+          entry={selectedEntry}
+          onClose={() => setSelectedEntry(null)}
+          onDelete={handleDeleteEntry}
+        />
       )}
-
 
       {showReviewModal && (
         <div className="fixed inset-0 bg-primary/20 backdrop-blur-[2px] z-50 flex items-center justify-center p-md">
@@ -537,4 +308,5 @@ export const DashboardPage: React.FC = () => {
     </div>
   );
 };
+
 export default DashboardPage;
