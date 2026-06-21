@@ -17,11 +17,10 @@ export default function SignInPage() {
   const [error, setError] = useState<string | null>(null);
 
   // ---------------------------------------------------------------------------
-  // Handle OAuth callback — Google redirects back here with ?token=...&userId=...
+  // Handle OAuth callback — Google redirects back here with ?userId=...
   // ---------------------------------------------------------------------------
   useEffect(() => {
     const params = new URLSearchParams(window.location.search);
-    const token = params.get('token');
     const userId = params.get('userId');
     const name = params.get('name') || 'User';
     const oauthError = params.get('error');
@@ -34,9 +33,9 @@ export default function SignInPage() {
       return;
     }
 
-    if (token && userId) {
-      saveAuthToken(token, userId, decodeURIComponent(name));
-      // Clean the token from URL immediately
+    if (userId) {
+      saveAuthToken(userId, decodeURIComponent(name));
+      // Clean the URL immediately
       window.history.replaceState({}, '', '/dashboard');
       navigate('/dashboard', { replace: true });
     }
@@ -60,21 +59,23 @@ export default function SignInPage() {
     setLoading(true);
     setError(null);
     try {
-      await new Promise(r => setTimeout(r, 1200));
-      saveAuthToken('mock_token_dev', 'user_001', 'Kishlay');
-
-      const answersStr = localStorage.getItem('ctrlc_quiz_answers');
-      if (answersStr) {
-        const answers = JSON.parse(answersStr);
-        fetch('/api/users/onboarding', {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ userId: 'user_001', ...answers }),
-        }).catch(console.error);
-        localStorage.removeItem('ctrlc_quiz_answers');
+      // Mock onboarding logic: register diet/commute defaults for dev
+      const res = await fetch('/api/users/onboarding', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        credentials: 'include',
+        body: JSON.stringify({
+          userId: 'user_001',
+          commuteType: 'metro',
+          dietType: 'omnivore'
+        })
+      });
+      if (res.ok) {
+        saveAuthToken('user_001', 'Dev User');
+        navigate('/dashboard');
+      } else {
+        setError('Login failed. Please try again.');
       }
-
-      navigate('/connect-app');
     } catch (e) {
       console.error(e);
       setLoading(false);

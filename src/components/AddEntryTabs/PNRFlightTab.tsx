@@ -33,6 +33,7 @@ export const PNRFlightTab = ({ onSaveSuccess }: { onSaveSuccess: (msg: string, e
       const response = await fetch('/api/lookup/train', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
+        credentials: 'include',
         body: JSON.stringify({ origin, destination }),
       });
       const data = await response.json();
@@ -54,6 +55,7 @@ export const PNRFlightTab = ({ onSaveSuccess }: { onSaveSuccess: (msg: string, e
       const response = await fetch('/api/lookup/flight', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
+        credentials: 'include',
         body: JSON.stringify({ flightNumber: flightNum }),
       });
       if (response.ok) {
@@ -85,7 +87,8 @@ export const PNRFlightTab = ({ onSaveSuccess }: { onSaveSuccess: (msg: string, e
       await fetch('/api/entries', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ userId: getAuthUserId(), ...entryPayload })
+        credentials: 'include',
+        body: JSON.stringify({ ...entryPayload })
       });
       onSaveSuccess(`Entry saved — ${trainCo2} kg logged`, entryPayload);
       setTrainResult(null);
@@ -113,7 +116,8 @@ export const PNRFlightTab = ({ onSaveSuccess }: { onSaveSuccess: (msg: string, e
       await fetch('/api/entries', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ userId: getAuthUserId(), ...entryPayload })
+        credentials: 'include',
+        body: JSON.stringify({ ...entryPayload })
       });
       onSaveSuccess(`Entry saved — ${flightCo2} kg logged`, entryPayload);
       setFlightResult(null);

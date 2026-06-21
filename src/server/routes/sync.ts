@@ -1,9 +1,10 @@
 import { Router, Request, Response } from 'express';
+import { authMiddleware } from '../middleware/auth';
 
 const router = Router();
 
 // POST /api/sync/:source
-router.post('/:source', async (req: Request, res: Response): Promise<void> => {
+router.post('/:source', authMiddleware, async (req: Request, res: Response): Promise<void> => {
   try {
     const { source } = req.params;
     

@@ -81,7 +81,7 @@ export const CategoryPage: React.FC = () => {
 
   const fetchCategoryData = async () => {
     try {
-      const res = await fetch(`/api/entries?userId=${DEFAULT_USER_ID}&category=${activeCategory}`);
+      const res = await fetch(`/api/entries?category=${activeCategory}`, { credentials: 'include' });
       if (res.ok) {
         const json = await res.json();
         const entries: Entry[] = json.entries || [];

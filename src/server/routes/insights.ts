@@ -2,17 +2,14 @@ import { Router, Request, Response } from 'express';
 import { readDb } from '../db';
 import { generateWeeklyInsight } from '../services/geminiService';
 import { startOfWeek } from 'date-fns';
+import { authMiddleware } from '../middleware/auth';
 
 const router = Router();
 
-// GET /api/insights/weekly?userId=
-router.get('/weekly', async (req: Request, res: Response): Promise<void> => {
+// GET /api/insights/weekly
+router.get('/weekly', authMiddleware, async (req: Request, res: Response): Promise<void> => {
   try {
-    const userId = req.query.userId as string;
-    if (!userId) {
-      res.status(400).json({ error: 'userId is required' });
-      return;
-    }
+    const userId = (req.user as any)?.userId;
 
     const now = new Date();
     const weekStart = startOfWeek(now, { weekStartsOn: 1 });

@@ -62,7 +62,7 @@ export const LeaderboardPage: React.FC = () => {
 
   const fetchLeaderboard = async () => {
     try {
-      const res = await fetch(`/api/users/leaderboard?userId=${DEFAULT_USER_ID}`);
+      const res = await fetch(`/api/users/leaderboard`, { credentials: 'include' });
       if (res.ok) {
         const json = await res.json();
         const list = json.leaderboard || [];

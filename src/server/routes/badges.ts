@@ -1,5 +1,6 @@
 import { Router, Request, Response } from 'express';
 import { readDb } from '../db';
+import { authMiddleware } from '../middleware/auth';
 
 const router = Router();
 
@@ -8,14 +9,10 @@ const ALL_BADGES = [
   'budget_master', 'food_swap', 'zero_cab_week', 'green_commuter'
 ];
 
-// GET /api/badges?userId=
-router.get('/', async (req: Request, res: Response): Promise<void> => {
+// GET /api/badges
+router.get('/', authMiddleware, async (req: Request, res: Response): Promise<void> => {
   try {
-    const userId = req.query.userId as string;
-    if (!userId) {
-      res.status(400).json({ error: 'userId is required' });
-      return;
-    }
+    const userId = (req.user as any)?.userId;
 
     const store = readDb();
     const earned = store.badges.filter((b: any) => b.userId === userId);

@@ -120,7 +120,7 @@ passport.serializeUser((user: any, done) => done(null, user.id));
 passport.deserializeUser((id: string, done) => {
   const store = readDb();
   const user = store.users.find((u) => u.id === id);
-  done(null, user || null);
+  done(null, (user as any) || null);
 });
 
 // ---------------------------------------------------------------------------
@@ -162,8 +162,15 @@ router.get('/google', (req: Request, res: Response) => {
       writeDb(store);
     }
     const token = issueToken(devUser);
+    const isProd = process.env.NODE_ENV === 'production';
+    res.cookie('token', token, {
+      httpOnly: true,
+      secure: isProd,
+      sameSite: isProd ? 'none' : 'lax',
+      maxAge: 30 * 24 * 60 * 60 * 1000 // 30 days
+    });
     return res.redirect(
-      `${getFrontendUrl()}/dashboard?token=${token}&userId=${devUser.id}&name=${encodeURIComponent(devUser.name)}`
+      `${getFrontendUrl()}/dashboard?userId=${devUser.id}&name=${encodeURIComponent(devUser.name)}`
     );
   }
 
@@ -212,10 +219,18 @@ router.get(
     );
   },
   (req: Request, res: Response) => {
+    const userId = (req.user as any).id || (req.user as any).userId;
     const user = req.user as CtrlCUser;
     const token = issueToken(user);
+    const isProd = process.env.NODE_ENV === 'production';
+    res.cookie('token', token, {
+      httpOnly: true,
+      secure: isProd,
+      sameSite: isProd ? 'none' : 'lax',
+      maxAge: 30 * 24 * 60 * 60 * 1000 // 30 days
+    });
     res.redirect(
-      `${getFrontendUrl()}/dashboard?token=${token}&userId=${user.id}&name=${encodeURIComponent(user.name)}`
+      `${getFrontendUrl()}/dashboard?userId=${user.id}&name=${encodeURIComponent(user.name)}`
     );
   }
 );
@@ -224,7 +239,8 @@ router.get(
 // POST /auth/verify  — validate a JWT (used by frontend on load)
 // ---------------------------------------------------------------------------
 router.post('/verify', (req: Request, res: Response) => {
-  const { token } = req.body;
+  // Check cookie first, fallback to body token for legacy
+  const token = req.cookies?.token || req.body.token;
   if (!token) { res.status(400).json({ error: 'token required' }); return; }
 
   try {
@@ -236,10 +252,16 @@ router.post('/verify', (req: Request, res: Response) => {
 });
 
 // ---------------------------------------------------------------------------
-// POST /auth/logout  — client just deletes token, but provide a server endpoint
+// POST /auth/logout  — clear the cookie
 // ---------------------------------------------------------------------------
 router.post('/logout', (_req: Request, res: Response) => {
-  res.status(200).json({ message: 'Logged out — delete token from localStorage' });
+  const isProd = process.env.NODE_ENV === 'production';
+  res.clearCookie('token', {
+    httpOnly: true,
+    secure: isProd,
+    sameSite: isProd ? 'none' : 'lax',
+  });
+  res.status(200).json({ message: 'Logged out' });
 });
 
 export default router;

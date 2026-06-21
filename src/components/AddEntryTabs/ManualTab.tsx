@@ -101,7 +101,8 @@ export const ManualTab = ({ onSaveSuccess }: { onSaveSuccess: (msg: string, entr
         await fetch('/api/entries', {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ userId: getAuthUserId(), ...entryPayload })
+          credentials: 'include',
+          body: JSON.stringify({ ...entryPayload })
         });
         onSaveSuccess(`Entry saved — ${calculatedCo2} kg logged`, entryPayload);
         // Reset form

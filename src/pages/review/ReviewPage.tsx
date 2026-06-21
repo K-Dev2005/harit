@@ -63,7 +63,7 @@ export const WeeklyReviewContent: React.FC<WeeklyReviewContentProps> = ({ isModa
   const fetchReviewAndInsight = async () => {
     try {
       // 1. Fetch AI Insight
-      const insightRes = await fetch(`/api/insights/weekly?userId=${DEFAULT_USER_ID}`);
+      const insightRes = await fetch(`/api/insights/weekly`, { credentials: 'include' });
       if (insightRes.ok) {
         const insightJson = await insightRes.ok ? await insightRes.json() : { insight: '' };
         setInsight(insightJson.insight || "Your transport emissions dropped every day this week — switching to metro on Wednesday made the biggest difference.");
@@ -72,7 +72,7 @@ export const WeeklyReviewContent: React.FC<WeeklyReviewContentProps> = ({ isModa
       }
 
       // 2. Fetch Dashboard/User stats to compile review details
-      const userRes = await fetch(`/api/users/dashboard?userId=${DEFAULT_USER_ID}`);
+      const userRes = await fetch(`/api/users/dashboard`, { credentials: 'include' });
       if (userRes.ok) {
         const userJson = await userRes.json();
         // Assemble review data from API response

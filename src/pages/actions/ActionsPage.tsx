@@ -67,7 +67,7 @@ export const ActionsPage: React.FC = () => {
 
   const fetchActions = async () => {
     try {
-      const res = await fetch(`/api/actions/weekly?userId=${DEFAULT_USER_ID}`);
+      const res = await fetch(`/api/actions/weekly`, { credentials: 'include' });
       if (res.ok) {
         const json = await res.json();
         const cards = json.cards || [];
@@ -125,9 +125,9 @@ export const ActionsPage: React.FC = () => {
       await fetch('/api/pledges', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
+        credentials: 'include',
         body: JSON.stringify({
-          actionCardId: cardId,
-          userId: DEFAULT_USER_ID
+          actionCardId: cardId
         })
       });
 

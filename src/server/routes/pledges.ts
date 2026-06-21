@@ -1,15 +1,17 @@
 import { Router, Request, Response } from 'express';
 import { readDb, writeDb } from '../db';
 import { POINTS_CONFIG } from '../../lib/points';
+import { authMiddleware } from '../middleware/auth';
 
 const router = Router();
 
 // POST /api/pledges
-router.post('/', async (req: Request, res: Response): Promise<void> => {
+router.post('/', authMiddleware, async (req: Request, res: Response): Promise<void> => {
   try {
-    const { userId, actionCardId } = req.body;
-    if (!userId || !actionCardId) {
-      res.status(400).json({ error: 'userId and actionCardId are required' });
+    const userId = (req.user as any)?.userId;
+    const { actionCardId } = req.body;
+    if (!actionCardId) {
+      res.status(400).json({ error: 'actionCardId is required' });
       return;
     }
 

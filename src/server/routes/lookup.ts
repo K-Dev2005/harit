@@ -1,17 +1,37 @@
 import { Router, Request, Response } from 'express';
 import dotenv from 'dotenv';
+import { authMiddleware } from '../middleware/auth';
+import { z } from 'zod';
+import rateLimit from 'express-rate-limit';
+
 dotenv.config();
 
 const router = Router();
 
+const lookupLimiter = rateLimit({
+  windowMs: 60 * 1000, // 1 minute
+  max: 15, // limit each IP to 15 lookup requests per windowMs
+  message: { error: 'Too many lookup requests, please try again later.' }
+});
+
+const trainSchema = z.object({
+  origin: z.string().min(1),
+  destination: z.string().min(1),
+});
+
+const flightSchema = z.object({
+  flightNumber: z.string().min(1),
+});
+
 // POST /api/lookup/train
-router.post('/train', async (req: Request, res: Response): Promise<void> => {
+router.post('/train', authMiddleware, lookupLimiter, async (req: Request, res: Response): Promise<void> => {
   try {
-    const { origin, destination } = req.body;
-    if (!origin || !destination) {
+    const parsed = trainSchema.safeParse(req.body);
+    if (!parsed.success) {
       res.status(400).json({ error: 'Please enter both origin and destination cities.' });
       return;
     }
+    const { origin, destination } = parsed.data;
 
     if (origin.trim().toLowerCase() === destination.trim().toLowerCase()) {
       res.status(400).json({ error: 'Origin and destination cannot be the same city.' });
@@ -60,13 +80,14 @@ router.post('/train', async (req: Request, res: Response): Promise<void> => {
 });
 
 // POST /api/lookup/flight
-router.post('/flight', async (req: Request, res: Response): Promise<void> => {
+router.post('/flight', authMiddleware, lookupLimiter, async (req: Request, res: Response): Promise<void> => {
   try {
-    const { flightNumber } = req.body;
-    if (!flightNumber) {
+    const parsed = flightSchema.safeParse(req.body);
+    if (!parsed.success) {
       res.status(400).json({ error: 'flightNumber is required' });
       return;
     }
+    const { flightNumber } = parsed.data;
 
     const upper = flightNumber.toUpperCase();
     let airline = "Generic Airlines";

@@ -44,18 +44,17 @@ export const DashboardPage: React.FC = () => {
   // Capture OAuth token if redirected here from Google callback
   useEffect(() => {
     const params = new URLSearchParams(window.location.search);
-    const token = params.get('token');
     const userId = params.get('userId');
     const name = params.get('name') || 'User';
-    if (token && userId) {
-      saveAuthToken(token, userId, decodeURIComponent(name));
+    if (userId) {
+      saveAuthToken(userId, decodeURIComponent(name));
       window.history.replaceState({}, '', '/dashboard');
     }
   }, []);
 
   const fetchDashboardData = async () => {
     try {
-      const res = await fetch(`/api/users/dashboard?userId=${getActiveUserId()}`);
+      const res = await fetch(`/api/users/dashboard`, { credentials: 'include' });
       if (res.ok) {
         const json = await res.json();
         // Check if friendRank is just a number, transform it to matching type
@@ -167,7 +166,7 @@ export const DashboardPage: React.FC = () => {
 
   const handleDeleteEntry = async (id: string) => {
     try {
-      const res = await fetch(`/api/entries/${id}`, { method: 'DELETE' });
+      const res = await fetch(`/api/entries/${id}`, { method: 'DELETE', credentials: 'include' });
       if (res.ok || res.status === 204) {
         // Remove locally from state and refetch or update state
         if (data) {

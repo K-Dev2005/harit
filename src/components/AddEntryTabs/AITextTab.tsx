@@ -106,6 +106,7 @@ export const AITextTab = ({ onSaveSuccess }: { onSaveSuccess: (msg: string, entr
       const response = await fetch('/api/entries/parse', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
+        credentials: 'include',
         body: JSON.stringify({ text: inputText }),
         signal: controller.signal,
       });
@@ -144,6 +145,7 @@ export const AITextTab = ({ onSaveSuccess }: { onSaveSuccess: (msg: string, entr
       const response = await fetch('/api/entries', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
+        credentials: 'include',
         body: JSON.stringify(parseResult.entry),
       });
       // Show success regardless — entry saved to DB or db.json fallback

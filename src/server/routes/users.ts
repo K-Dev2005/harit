@@ -1,15 +1,17 @@
 import { Router, Request, Response } from 'express';
 import { readDb, writeDb } from '../db';
 import { startOfWeek, startOfMonth } from 'date-fns';
+import { authMiddleware } from '../middleware/auth';
 
 const router = Router();
 
 // ---------------------------------------------------------------------------
 // POST /api/users/onboarding
 // ---------------------------------------------------------------------------
-router.post('/onboarding', (req: Request, res: Response): void => {
+router.post('/onboarding', authMiddleware, (req: Request, res: Response): void => {
   try {
-    const { userId, commuteType, dietType, homeEnergy, flightsPerYear } = req.body;
+    const userId = (req.user as any)?.userId;
+    const { commuteType, dietType, homeEnergy, flightsPerYear } = req.body;
     let baselineAnnualKg = 2500;
     if (dietType === 'vegan') baselineAnnualKg -= 500;
     if (commuteType === 'metro') baselineAnnualKg -= 300;
@@ -33,9 +35,9 @@ router.post('/onboarding', (req: Request, res: Response): void => {
 // ---------------------------------------------------------------------------
 // GET /api/users/dashboard?userId=
 // ---------------------------------------------------------------------------
-router.get('/dashboard', (req: Request, res: Response): void => {
+router.get('/dashboard', authMiddleware, (req: Request, res: Response): void => {
   try {
-    const userId = (req.query.userId as string) || 'user_001';
+    const userId = (req.user as any)?.userId;
     const store = readDb();
 
     const user = store.users.find((u: any) => u.id === userId) || {
@@ -84,7 +86,7 @@ router.get('/dashboard', (req: Request, res: Response): void => {
 // ---------------------------------------------------------------------------
 // GET /api/users/leaderboard
 // ---------------------------------------------------------------------------
-router.get('/leaderboard', (_req: Request, res: Response): void => {
+router.get('/leaderboard', authMiddleware, (_req: Request, res: Response): void => {
   res.status(200).json({
     leaderboard: [
       { name: 'Aditi', weekKg: 12.5, deltaKg: -2.1, isMe: false },

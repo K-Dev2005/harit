@@ -4,6 +4,9 @@ import dotenv from 'dotenv';
 import session from 'express-session';
 import passport from 'passport';
 import path from 'path';
+import helmet from 'helmet';
+import cookieParser from 'cookie-parser';
+import rateLimit from 'express-rate-limit';
 
 dotenv.config();
 
@@ -21,6 +24,17 @@ app.set('trust proxy', 1); // Trust the first proxy (Render load balancer) requi
 // ---------------------------------------------------------------------------
 // Middleware
 // ---------------------------------------------------------------------------
+app.use(helmet()); // Set security headers
+app.use(cookieParser()); // Parse cookies
+
+// Global Rate Limiter: 100 requests per 15 minutes
+const globalLimiter = rateLimit({
+  windowMs: 15 * 60 * 1000,
+  max: 100,
+  message: { error: 'Too many requests, please try again later.' }
+});
+app.use('/api/', globalLimiter);
+
 app.use(cors({
   origin: isProd
     ? [FRONTEND_URL]

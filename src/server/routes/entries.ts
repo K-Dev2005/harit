@@ -2,8 +2,29 @@ import { Router, Request, Response } from 'express';
 import { readDb, writeDb } from '../db';
 import { parseEntryText } from '../services/geminiService';
 import { startOfWeek, startOfMonth } from 'date-fns';
+import { authMiddleware } from '../middleware/auth';
+import { z } from 'zod';
+import rateLimit from 'express-rate-limit';
 
 const router = Router();
+
+const parseLimiter = rateLimit({
+  windowMs: 60 * 1000, // 1 minute
+  max: 15, // limit each IP to 15 parse requests per windowMs
+  message: { error: 'Too many parse requests, please try again later.' }
+});
+
+const entrySchema = z.object({
+  category: z.string().default('other'),
+  subcategory: z.string().default('general'),
+  description: z.string().optional(),
+  distanceKm: z.number().optional(),
+  quantity: z.number().optional(),
+  unit: z.string().optional(),
+  co2Kg: z.number().min(0).default(0),
+  source: z.string().default('ai'),
+  rawInput: z.string().optional(),
+});
 
 function generateId(): string {
   return `e_${Date.now()}_${Math.random().toString(36).slice(2, 7)}`;
@@ -12,7 +33,7 @@ function generateId(): string {
 // ---------------------------------------------------------------------------
 // POST /api/entries/parse
 // ---------------------------------------------------------------------------
-router.post('/parse', async (req: Request, res: Response): Promise<void> => {
+router.post('/parse', authMiddleware, parseLimiter, async (req: Request, res: Response): Promise<void> => {
   try {
     const { text } = req.body;
     if (!text) {
@@ -30,35 +51,17 @@ router.post('/parse', async (req: Request, res: Response): Promise<void> => {
 // ---------------------------------------------------------------------------
 // POST /api/entries  — save to db.json
 // ---------------------------------------------------------------------------
-router.post('/', (req: Request, res: Response): void => {
+router.post('/', authMiddleware, (req: Request, res: Response): void => {
   try {
-    const {
-      userId = 'user_001',
-      category = 'other',
-      subcategory = 'general',
-      description = '',
-      distanceKm,
-      quantity,
-      unit,
-      co2Kg = 0,
-      source = 'ai',
-      rawInput,
-    } = req.body;
+    const userId = (req.user as any)?.userId;
+    const validated = entrySchema.parse(req.body);
 
     const store = readDb();
 
     const newEntry = {
       id: generateId(),
       userId,
-      category,
-      subcategory,
-      description,
-      distanceKm: distanceKm !== undefined ? Number(distanceKm) : null,
-      quantity: quantity !== undefined ? Number(quantity) : null,
-      unit: unit || null,
-      co2Kg: Number(co2Kg) || 0,
-      source,
-      rawInput: rawInput || null,
+      ...validated,
       loggedAt: new Date().toISOString(),
       createdAt: new Date().toISOString(),
     };
@@ -81,9 +84,13 @@ router.post('/', (req: Request, res: Response): void => {
     }
 
     writeDb(store);
-    console.log(`[entries] Saved entry ${newEntry.id} (${category}, ${co2Kg} kg) to db.json`);
+    console.log(`[entries] Saved entry ${newEntry.id} (${validated.category}, ${validated.co2Kg} kg) to db.json`);
     res.status(201).json({ entry: newEntry, badgesEarned: [] });
-  } catch (error) {
+  } catch (error: any) {
+    if (error instanceof z.ZodError) {
+      res.status(400).json({ error: 'Validation failed', details: (error as any).errors });
+      return;
+    }
     console.error('Create Entry Error:', error);
     res.status(500).json({ error: 'Failed to create entry' });
   }
@@ -92,9 +99,9 @@ router.post('/', (req: Request, res: Response): void => {
 // ---------------------------------------------------------------------------
 // GET /api/entries
 // ---------------------------------------------------------------------------
-router.get('/', (req: Request, res: Response): void => {
+router.get('/', authMiddleware, (req: Request, res: Response): void => {
   try {
-    const userId = (req.query.userId as string) || 'user_001';
+    const userId = (req.user as any)?.userId;
     const category = req.query.category as string | undefined;
     const page = parseInt(req.query.page as string) || 1;
     const limit = 20;
@@ -116,10 +123,22 @@ router.get('/', (req: Request, res: Response): void => {
 // ---------------------------------------------------------------------------
 // DELETE /api/entries/:id
 // ---------------------------------------------------------------------------
-router.delete('/:id', (req: Request, res: Response): void => {
+router.delete('/:id', authMiddleware, (req: Request, res: Response): void => {
   try {
     const { id } = req.params;
+    const userId = (req.user as any)?.userId;
     const store = readDb();
+    
+    const entry = store.entries.find((e: any) => e.id === id);
+    if (!entry) {
+      res.status(404).json({ error: 'Not found' });
+      return;
+    }
+    if (entry.userId !== userId) {
+      res.status(403).json({ error: 'Forbidden: Cannot delete other user\'s entry' });
+      return;
+    }
+
     store.entries = store.entries.filter((e: any) => e.id !== id);
     writeDb(store);
     res.status(204).send();

@@ -147,7 +147,7 @@ export const BadgesPage: React.FC = () => {
 
   const fetchBadges = async () => {
     try {
-      const res = await fetch(`/api/badges?userId=${DEFAULT_USER_ID}`);
+      const res = await fetch(`/api/badges`, { credentials: 'include' });
       if (res.ok) {
         const json = await res.json();
         // Extract slugs that are earned
