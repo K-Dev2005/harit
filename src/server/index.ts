@@ -16,6 +16,8 @@ app.get('/health', (_req, res) => {
     res.status(200).json({ status: 'ok' });
 }); 
 
+app.set('trust proxy', 1); // Trust the first proxy (Render load balancer) required for secure session cookies
+
 // ---------------------------------------------------------------------------
 // Middleware
 // ---------------------------------------------------------------------------
