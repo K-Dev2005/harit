@@ -59,8 +59,11 @@ const AppLayout: React.FC<{ children: React.ReactNode }> = ({ children }) => {
 
   return (
     <div className="flex h-screen overflow-hidden bg-background relative">
+      <a href="#main-content" className="sr-only focus:not-sr-only focus:absolute focus:top-0 focus:left-0 focus:z-50 focus:p-4 focus:bg-primary focus:text-white">
+        Skip to main content
+      </a>
       {/* SideNavBar (Desktop only, hidden on mobile) */}
-      <nav className="hidden md:flex flex-col h-full py-lg px-md w-64 border-r bg-surface border-surface-variant/80 z-20">
+      <nav aria-label="Sidebar navigation" className="hidden md:flex flex-col h-full py-lg px-md w-64 border-r bg-surface border-surface-variant/80 z-20">
         <div className="mb-xxl">
           <h1 className="text-[24px] font-extrabold text-primary tracking-tight leading-none">CtrlC</h1>
           <p className="text-[10px] font-bold text-on-surface-variant uppercase tracking-wider mt-1">Carbon Ledger</p>
@@ -69,7 +72,7 @@ const AppLayout: React.FC<{ children: React.ReactNode }> = ({ children }) => {
         <div className="flex-1 space-y-xs">
           <Link
             to="/dashboard"
-            className={`flex items-center gap-md px-md py-sm rounded-full transition-colors ${
+            className={`flex items-center gap-md px-md py-sm rounded-full transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary focus-visible:ring-offset-2 ${
               isActive('/dashboard')
                 ? 'bg-primary-container text-white font-semibold'
                 : 'text-on-surface-variant hover:bg-surface-container'
@@ -81,7 +84,7 @@ const AppLayout: React.FC<{ children: React.ReactNode }> = ({ children }) => {
 
           <Link
             to="/actions"
-            className={`flex items-center gap-md px-md py-sm rounded-full transition-colors ${
+            className={`flex items-center gap-md px-md py-sm rounded-full transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary focus-visible:ring-offset-2 ${
               isActive('/actions')
                 ? 'bg-primary-container text-white font-semibold'
                 : 'text-on-surface-variant hover:bg-surface-container'
@@ -93,7 +96,7 @@ const AppLayout: React.FC<{ children: React.ReactNode }> = ({ children }) => {
 
           <Link
             to="/leaderboard"
-            className={`flex items-center gap-md px-md py-sm rounded-full transition-colors ${
+            className={`flex items-center gap-md px-md py-sm rounded-full transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary focus-visible:ring-offset-2 ${
               isActive('/leaderboard')
                 ? 'bg-primary-container text-white font-semibold'
                 : 'text-on-surface-variant hover:bg-surface-container'
@@ -105,7 +108,7 @@ const AppLayout: React.FC<{ children: React.ReactNode }> = ({ children }) => {
 
           <Link
             to="/badges"
-            className={`flex items-center gap-md px-md py-sm rounded-full transition-colors ${
+            className={`flex items-center gap-md px-md py-sm rounded-full transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary focus-visible:ring-offset-2 ${
               isActive('/badges')
                 ? 'bg-primary-container text-white font-semibold'
                 : 'text-on-surface-variant hover:bg-surface-container'
@@ -133,9 +136,9 @@ const AppLayout: React.FC<{ children: React.ReactNode }> = ({ children }) => {
       </nav>
 
       {/* Main Content Area */}
-      <div className="flex-grow h-full overflow-y-auto">
+      <main id="main-content" className="flex-grow h-full overflow-y-auto outline-none" tabIndex={-1}>
         {children}
-      </div>
+      </main>
 
       {/* Bottom Nav Bar (Mobile only, hidden on desktop) */}
       <BottomNav />

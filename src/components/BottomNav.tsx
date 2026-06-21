@@ -19,7 +19,7 @@ export const BottomNav: React.FC = () => {
   ];
 
   return (
-    <div className="md:hidden fixed bottom-0 left-0 right-0 bg-surface-container-lowest border-t border-surface-variant flex justify-around py-sm z-30 shadow-[0_-2px_10px_rgba(0,0,0,0.02)]">
+    <nav aria-label="Bottom navigation" className="md:hidden fixed bottom-0 left-0 right-0 bg-surface-container-lowest border-t border-surface-variant flex justify-around py-sm z-30 shadow-[0_-2px_10px_rgba(0,0,0,0.02)]">
       {items.map((item) => {
         const isActive = location.pathname.startsWith(item.path) || 
                          (item.path === '/actions' && location.pathname.startsWith('/review')) ||
@@ -28,7 +28,9 @@ export const BottomNav: React.FC = () => {
           <button
             key={item.label}
             onClick={() => navigate(item.path)}
-            className="flex flex-col items-center gap-xs py-1 px-4 rounded-full transition-all duration-200"
+            aria-label={item.label}
+            aria-current={isActive ? 'page' : undefined}
+            className="flex flex-col items-center gap-xs py-1 px-4 rounded-full transition-all duration-200 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary focus-visible:ring-offset-2"
           >
             <span
               className={`material-symbols-outlined text-[24px] transition-colors ${
@@ -47,7 +49,7 @@ export const BottomNav: React.FC = () => {
           </button>
         );
       })}
-    </div>
+    </nav>
   );
 };
 

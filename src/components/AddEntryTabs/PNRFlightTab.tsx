@@ -148,7 +148,7 @@ export const PNRFlightTab = ({ onSaveSuccess }: { onSaveSuccess: (msg: string, e
       onClick={() => setTrainClass(cls)}
       title={getClassName(cls)}
       disabled={isLoadingTrain}
-      className={`py-xs rounded text-label-sm font-medium transition-colors ${
+      className={`py-xs rounded text-label-sm font-medium transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary focus-visible:ring-offset-2 ${
         trainClass === cls 
           ? 'bg-surface text-on-surface border-2 border-primary shadow-sm' 
           : 'text-on-surface-variant hover:bg-surface-container border-2 border-transparent disabled:opacity-50'
@@ -164,7 +164,7 @@ export const PNRFlightTab = ({ onSaveSuccess }: { onSaveSuccess: (msg: string, e
       <div className="flex gap-xs bg-surface-container-low p-1 rounded-lg w-full mb-md">
         <button
           onClick={() => setActiveMode('train')}
-          className={`flex-1 flex items-center justify-center gap-sm py-sm rounded-md transition-all font-medium text-body-md ${
+          className={`flex-1 flex items-center justify-center gap-sm py-sm rounded-md transition-all font-medium text-body-md focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary focus-visible:ring-offset-2 ${
             activeMode === 'train'
               ? 'bg-surface shadow-sm text-primary border border-outline-variant/50'
               : 'text-on-surface-variant hover:bg-surface-container hover:text-on-surface'
@@ -175,7 +175,7 @@ export const PNRFlightTab = ({ onSaveSuccess }: { onSaveSuccess: (msg: string, e
         </button>
         <button
           onClick={() => setActiveMode('flight')}
-          className={`flex-1 flex items-center justify-center gap-sm py-sm rounded-md transition-all font-medium text-body-md ${
+          className={`flex-1 flex items-center justify-center gap-sm py-sm rounded-md transition-all font-medium text-body-md focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary focus-visible:ring-offset-2 ${
             activeMode === 'flight'
               ? 'bg-surface shadow-sm text-primary border border-outline-variant/50'
               : 'text-on-surface-variant hover:bg-surface-container hover:text-on-surface'
@@ -217,7 +217,7 @@ export const PNRFlightTab = ({ onSaveSuccess }: { onSaveSuccess: (msg: string, e
           <button
             onClick={handleTrainLookup}
             disabled={!origin || !destination || isLoadingTrain}
-            className="bg-primary text-on-primary px-md py-sm rounded font-medium text-body-md hover:bg-primary-container disabled:opacity-50 mt-sm flex justify-center"
+            className="bg-primary text-on-primary px-md py-sm rounded font-medium text-body-md hover:bg-primary-container disabled:opacity-50 mt-sm flex justify-center focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary focus-visible:ring-offset-2"
           >
             {isLoadingTrain ? (
               <span className="flex items-center gap-xs">
@@ -240,7 +240,7 @@ export const PNRFlightTab = ({ onSaveSuccess }: { onSaveSuccess: (msg: string, e
 
               <div className="flex justify-between items-center pt-xs">
                 <div className="text-headline-md text-secondary">{trainCo2} kg CO₂e</div>
-                <button onClick={saveTrain} className="bg-primary text-on-primary px-md py-sm rounded text-body-md font-medium">
+                <button onClick={saveTrain} className="bg-primary text-on-primary px-md py-sm rounded text-body-md font-medium focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary focus-visible:ring-offset-2">
                   Save journey
                 </button>
               </div>
@@ -250,9 +250,10 @@ export const PNRFlightTab = ({ onSaveSuccess }: { onSaveSuccess: (msg: string, e
       ) : (
         /* Flight Section */
         <div className="flex flex-col gap-sm">
-          <label className="text-label-sm text-on-surface-variant uppercase tracking-wider">Flight number</label>
+          <label htmlFor="flight-num-input" className="text-label-sm text-on-surface-variant uppercase tracking-wider">Flight number</label>
           <div className="flex gap-sm">
             <input
+              id="flight-num-input"
               type="text"
               value={flightNum}
               onChange={e => setFlightNum(e.target.value)}
@@ -262,7 +263,7 @@ export const PNRFlightTab = ({ onSaveSuccess }: { onSaveSuccess: (msg: string, e
             <button
               onClick={handleFlightLookup}
               disabled={!flightNum.trim()}
-              className="bg-primary text-on-primary px-md rounded font-medium text-body-md hover:bg-primary-container disabled:opacity-50"
+              className="bg-primary text-on-primary px-md rounded font-medium text-body-md hover:bg-primary-container disabled:opacity-50 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary focus-visible:ring-offset-2"
             >
               Look up
             </button>
@@ -286,7 +287,7 @@ export const PNRFlightTab = ({ onSaveSuccess }: { onSaveSuccess: (msg: string, e
                     Includes radiative forcing (1.9×) — flights emit more than CO₂ at altitude
                   </div>
                 </div>
-                <button onClick={saveFlight} className="bg-primary text-on-primary px-md py-sm rounded text-body-md font-medium">
+                <button onClick={saveFlight} className="bg-primary text-on-primary px-md py-sm rounded text-body-md font-medium focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary focus-visible:ring-offset-2">
                   Save flight
                 </button>
               </div>

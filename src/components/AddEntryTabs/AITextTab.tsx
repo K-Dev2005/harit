@@ -176,6 +176,7 @@ export const AITextTab = ({ onSaveSuccess }: { onSaveSuccess: (msg: string, entr
     <div className="flex flex-col gap-lg pb-xxl">
       <div className="flex flex-col gap-base">
         <textarea
+          aria-label="Describe your activity"
           value={text}
           onChange={(e) => setText(e.target.value)}
           onKeyDown={(e) => {
@@ -193,7 +194,7 @@ export const AITextTab = ({ onSaveSuccess }: { onSaveSuccess: (msg: string, entr
               <button
                 key={idx}
                 onClick={() => setText(pill)}
-                className="text-label-sm px-sm py-xs bg-surface-container rounded-full text-on-surface-variant hover:bg-surface-container-high transition-colors text-left"
+                className="text-label-sm px-sm py-xs bg-surface-container rounded-full text-on-surface-variant hover:bg-surface-container-high transition-colors text-left focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary focus-visible:ring-offset-2"
               >
                 {pill}
               </button>
@@ -234,7 +235,7 @@ export const AITextTab = ({ onSaveSuccess }: { onSaveSuccess: (msg: string, entr
                 />
                 <button
                   onClick={handleClarificationSubmit}
-                  className="bg-primary text-on-primary px-md rounded font-medium text-body-md hover:bg-primary-container"
+                  className="bg-primary text-on-primary px-md rounded font-medium text-body-md hover:bg-primary-container focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary focus-visible:ring-offset-2"
                 >
                   Update
                 </button>
@@ -290,13 +291,13 @@ export const AITextTab = ({ onSaveSuccess }: { onSaveSuccess: (msg: string, entr
         <div className="flex gap-sm">
           <button
             onClick={handleConfirmAndSave}
-            className="flex-grow bg-primary text-on-primary py-sm rounded font-medium text-body-md hover:bg-primary-container transition-colors"
+            className="flex-grow bg-primary text-on-primary py-sm rounded font-medium text-body-md hover:bg-primary-container transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary focus-visible:ring-offset-2"
           >
             Save entry
           </button>
           <button
             onClick={handleEdit}
-            className="w-1/3 bg-transparent border border-outline text-on-surface py-sm rounded text-body-md font-medium hover:bg-surface-container-low transition-colors"
+            className="w-1/3 bg-transparent border border-outline text-on-surface py-sm rounded text-body-md font-medium hover:bg-surface-container-low transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary focus-visible:ring-offset-2"
           >
             Edit
           </button>
@@ -305,7 +306,7 @@ export const AITextTab = ({ onSaveSuccess }: { onSaveSuccess: (msg: string, entr
         <button
           onClick={() => handleParse(text)}
           disabled={!text.trim()}
-          className="w-full bg-primary text-on-primary py-sm rounded font-medium text-body-md hover:bg-primary-container transition-colors disabled:opacity-50"
+          className="w-full bg-primary text-on-primary py-sm rounded font-medium text-body-md hover:bg-primary-container transition-colors disabled:opacity-50 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary focus-visible:ring-offset-2"
         >
           Enter
         </button>

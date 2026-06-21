@@ -101,15 +101,17 @@ export const AddEntrySheet = () => {
 
         {/* Header / Tabs */}
         <div className="flex w-full px-md pb-xs border-b border-outline-variant">
-          <div className="flex gap-xs bg-surface-container-low p-1 rounded-lg w-full">
+          <div role="tablist" aria-label="Add entry methods" className="flex gap-xs bg-surface-container-low p-1 rounded-lg w-full">
             {TABS.map(tab => {
               const Icon = tab.icon;
               const isActive = activeTab === tab.id;
               return (
                 <button
                   key={tab.id}
+                  role="tab"
+                  aria-selected={isActive}
                   onClick={() => setActiveTab(tab.id as TabType)}
-                  className={`flex-1 flex flex-col items-center justify-center gap-1 py-xs rounded-md transition-all ${
+                  className={`flex-1 flex flex-col items-center justify-center gap-1 py-xs rounded-md transition-all focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary focus-visible:ring-offset-2 ${
                     isActive 
                       ? 'bg-surface shadow-sm text-primary border border-outline-variant/50' 
                       : 'text-on-surface-variant hover:bg-surface-container'
@@ -134,7 +136,11 @@ export const AddEntrySheet = () => {
 
         {/* Toast Overlay */}
         {toastMsg && (
-          <div className="absolute top-md left-1/2 -translate-x-1/2 bg-primary text-on-primary px-lg py-sm rounded-lg shadow-lg text-body-md font-medium z-50 animate-in fade-in slide-in-from-top-4">
+          <div 
+            role="status" 
+            aria-live="polite" 
+            className="absolute top-md left-1/2 -translate-x-1/2 bg-primary text-on-primary px-lg py-sm rounded-lg shadow-lg text-body-md font-medium z-50 animate-in fade-in slide-in-from-top-4"
+          >
             {toastMsg}
           </div>
         )}

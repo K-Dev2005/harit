@@ -118,8 +118,9 @@ export const ManualTab = ({ onSaveSuccess }: { onSaveSuccess: (msg: string, entr
   return (
     <div className="flex flex-col gap-lg pb-xxl">
       <div className="flex flex-col gap-sm">
-        <label className="text-label-sm text-on-surface-variant uppercase tracking-wider">Activity type</label>
+        <label htmlFor="activity-type" className="text-label-sm text-on-surface-variant uppercase tracking-wider">Activity type</label>
         <select
+          id="activity-type"
           value={activityType}
           onChange={e => {
             setActivityType(e.target.value);
@@ -132,9 +133,10 @@ export const ManualTab = ({ onSaveSuccess }: { onSaveSuccess: (msg: string, entr
       </div>
 
       <div className="flex flex-col gap-sm">
-        <label className="text-label-sm text-on-surface-variant uppercase tracking-wider">Distance or quantity</label>
+        <label htmlFor="quantity-input" className="text-label-sm text-on-surface-variant uppercase tracking-wider">Distance or quantity</label>
         <div className="flex gap-sm">
           <input
+            id="quantity-input"
             type="number"
             value={quantity}
             onChange={e => {
@@ -145,6 +147,7 @@ export const ManualTab = ({ onSaveSuccess }: { onSaveSuccess: (msg: string, entr
             className="flex-1 bg-surface border border-outline-variant rounded p-sm text-body-md focus:border-primary font-mono"
           />
           <select
+            aria-label="Unit"
             value={unit}
             onChange={e => {
               setUnit(e.target.value);
@@ -163,8 +166,9 @@ export const ManualTab = ({ onSaveSuccess }: { onSaveSuccess: (msg: string, entr
       </div>
 
       <div className="flex flex-col gap-sm">
-        <label className="text-label-sm text-on-surface-variant uppercase tracking-wider">Date</label>
+        <label htmlFor="date-input" className="text-label-sm text-on-surface-variant uppercase tracking-wider">Date</label>
         <input
+          id="date-input"
           type="date"
           value={date}
           onChange={e => setDate(e.target.value)}
@@ -173,8 +177,9 @@ export const ManualTab = ({ onSaveSuccess }: { onSaveSuccess: (msg: string, entr
       </div>
 
       <div className="flex flex-col gap-sm">
-        <label className="text-label-sm text-on-surface-variant uppercase tracking-wider">Notes</label>
+        <label htmlFor="notes-input" className="text-label-sm text-on-surface-variant uppercase tracking-wider">Notes</label>
         <input
+          id="notes-input"
           type="text"
           value={notes}
           onChange={e => setNotes(e.target.value)}
@@ -187,7 +192,7 @@ export const ManualTab = ({ onSaveSuccess }: { onSaveSuccess: (msg: string, entr
         <button
           onClick={handleAction}
           disabled={!quantity}
-          className="flex-1 bg-primary text-on-primary py-sm rounded font-medium text-body-md hover:bg-primary-container transition-colors disabled:opacity-50"
+          className="flex-1 bg-primary text-on-primary py-sm rounded font-medium text-body-md hover:bg-primary-container transition-colors disabled:opacity-50 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary focus-visible:ring-offset-2"
         >
           {calculatedCo2 === null ? 'Calculate' : 'Save entry'}
         </button>
