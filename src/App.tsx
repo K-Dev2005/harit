@@ -115,17 +115,7 @@ const AppLayout: React.FC<{ children: React.ReactNode }> = ({ children }) => {
             <span className="text-xs font-semibold">Badges</span>
           </Link>
 
-          <Link
-            to="/apps"
-            className={`flex items-center gap-md px-md py-sm rounded-full transition-colors ${
-              isActive('/apps')
-                ? 'bg-primary-container text-white font-semibold'
-                : 'text-on-surface-variant hover:bg-surface-container'
-            }`}
-          >
-            <span className="material-symbols-outlined text-[20px]">power</span>
-            <span className="text-xs font-semibold">Connect Apps</span>
-          </Link>
+
         </div>
 
         <div className="mt-auto pt-sm border-t border-surface-variant/40">
